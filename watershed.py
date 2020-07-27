@@ -67,7 +67,7 @@ class App:
             self.thresh_max = ret
         else:
             ret, thresh = cv.threshold(gray, self.thresh_value, 255, cv.THRESH_BINARY)
-        print("ret:", ret)
+        # print("ret:", ret)
         # cv.imshow("thresh", thresh)
 
         # noise removal

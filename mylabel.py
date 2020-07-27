@@ -22,12 +22,14 @@ class MyLabel(QLabel):
 	final_flag = False
 	close_flag = False
 	
-	def set_parameters(self, pix_map, radio_rect, radio_poly, cur_img_ann):
+	def set_parameters(self, pix_map, radio_rect, radio_poly, cur_img_ann, boundary_points=None):
 		self.pix_map = pix_map
 		self.radio_rect = radio_rect
 		self.radio_poly = radio_poly
 		self.cur_img_ann = cur_img_ann
 		self.setMouseTracking(True) # 鼠标没有按下也能捕获鼠标移动
+
+		self.boundary_points = boundary_points
 	
 	# 删除除了原图以外的绘图
 	def refresh(self):
@@ -55,8 +57,18 @@ class MyLabel(QLabel):
 					-5 < point.y() - self.poly_points[0].y() < 5:
 					self.close_flag = True
 				self.poly_points.append(point)
+				# print(point)
 				self.press_flag = True
-				print(self.close_flag)
+				if self.close_flag:
+					print("标注已闭合！")
+					all_points_x = []
+					all_points_y = []
+					for point in self.poly_points:
+						all_points_x.append(point.x())
+						all_points_y.append(point.y())
+					self.boundary_points.append(all_points_x)
+					self.boundary_points.append(all_points_y)
+
 				self.update()
 			if event.button() == Qt.RightButton:
 				self.poly_points.clear()

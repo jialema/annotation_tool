@@ -124,6 +124,7 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 		index = self.treeView.currentIndex()
 		self.image_id = index.row()
 		self.label_img_info.setText("image_id: {}\nname: {}".format(self.image_id, self.test_data[self.image_id]))
+		self.boundary_points = []
 		if self.tabWidget.currentIndex() == 0: # 全手动处理
 			self.show_image_manu()
 		elif self.tabWidget.currentIndex() == 1: # 半自动处理
@@ -151,7 +152,7 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 		# self.lb.setCursor(Qt.CrossCursor) # 改变鼠标箭头形式
 		
 		rgb_pix_map = display_image_on_label(rgb_image, self.lb)
-		self.lb.set_parameters(rgb_pix_map, self.radio_rect, self.radio_poly, self.cur_img_ann)
+		self.lb.set_parameters(rgb_pix_map, self.radio_rect, self.radio_poly, self.cur_img_ann, self.boundary_points)
 		self.lb.setCursor(Qt.CrossCursor)  # 改变鼠标箭头形式
 
 	# 半自动标注的处理函数
@@ -190,21 +191,6 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 		registered_pix_map = display_image_on_label(registered_image, self.mylabel_registered_auto)
 		mask, self.boundary_points = watershed.App(registered_image.copy()).start()
 		_ = display_image_on_label(mask, self.label_mask_auto)
-
-		# 将掩码边界存储起来
-		# m = self.markers.copy()
-		# cv.watershed(self.img, m)
-		# overlay = self.colors[np.maximum(m, 0)]
-		# vis = cv.addWeighted(self.img, 0.5, overlay, 0.5, 0.0, dtype=cv.CV_8UC3)
-		# display_image_on_label(vis, self.label_mask_auto)
-		# ol = overlay.astype(np.uint8)
-		# mask_bool = ol[:, :, 2] == 255
-		# nonb = mask_bool.nonzero()
-		# all_points_y = nonb[0].tolist()
-		# all_points_x = nonb[1].tolist()
-		# self.mask.clear()
-		# self.mask.append(all_points_x)
-		# self.mask.append(all_points_y)
 		
 		self.mylabel_registered_auto.set_parameters(registered_image, registered_pix_map,
 		                                            self.label_mask_auto,
@@ -229,7 +215,17 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 		regions_item["shape_attributes"]["name"] = name_shape_attributes
 		regions_item["shape_attributes"]["all_points_x"] = self.boundary_points[0]
 		regions_item["shape_attributes"]["all_points_y"] = self.boundary_points[1]
-		region_attributes = {"type": "power"}
+		category = self.test_data[self.image_id].split("_")[0]
+		category_label = '0'
+		if category == "box":
+			category_label = '1'
+		elif category == "cabinet":
+			category_label = '2'
+		elif category == "insulator":
+			category_label = '3'
+		elif category == "transformor":
+			category_label = '4'
+		region_attributes = {"label": category_label}
 		regions_item["region_attributes"] = region_attributes
 		regions.append(regions_item)
 		
