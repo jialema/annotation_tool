@@ -42,6 +42,8 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 
 	def initUI(self):
 		self.setWindowTitle("标注工具")
+		self.label_log.setText("")
+
 		from mylabel import MyLabel, SemiLabel
 		
 		# 将响应函数绑定在按钮上
@@ -205,6 +207,7 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 		# 是否进行了标注
 		if self.boundary_points == []:
 			print("请先进行标注")
+			self.label_log.setText("Tip: " + "请先进行标注！")
 			return
 
 		# 转换标注的格式
@@ -239,7 +242,9 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 		save_path = "./results/"
 		j = json_lib.JSON()
 		j.JSONWrite(save_path + img_name[:-4] + ".json", self.cur_img_ann)
-		print(img_name + "的标注已保存到" + save_path + img_name[:-4] + ".json")
+		log = img_name + "的标注已保存到" + save_path + img_name[:-4] + ".json"
+		self.label_log.setText("Tip: " + log)
+		print(log)
 		
 	def water_shed(self, img):
 		self.markers_vis = watershed.App(img).run()

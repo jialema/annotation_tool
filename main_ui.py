@@ -122,6 +122,9 @@ class Ui_MainWindow(object):
         self.radio_poly = QtWidgets.QRadioButton(self.centralwidget)
         self.radio_poly.setGeometry(QtCore.QRect(440, 12, 73, 21))
         self.radio_poly.setObjectName("radio_poly")
+        self.label_log = QtWidgets.QLabel(self.centralwidget)
+        self.label_log.setGeometry(QtCore.QRect(520, 12, 400, 21))
+        self.label_log.setObjectName("label_log")
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
         self.menubar.setGeometry(QtCore.QRect(0, 0, 953, 20))
@@ -161,4 +164,5 @@ class Ui_MainWindow(object):
         self.label_img_info.setText(_translate("MainWindow", "image_info"))
         self.radio_rect.setText(_translate("MainWindow", "rectangle"))
         self.radio_poly.setText(_translate("MainWindow", "polygon"))
+        self.label_log.setText(_translate("MainWindow", "TextLabel"))
 
