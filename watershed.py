@@ -49,6 +49,8 @@ class App:
         self.preprocess(0)
         self.sketch = Sketcher('img', [self.markers_vis, self.markers], self.get_colors)
 
+        self.boundary_points = []
+
     def change_thresh(self):
         self.thresh_value += 10
         if self.thresh_value > self.thresh_max:
@@ -126,10 +128,19 @@ class App:
         overlay = self.colors[np.maximum(m, 0)]
         self.vis = cv.addWeighted(self.img, 0.5, overlay, 0.5, 0.0, dtype=cv.CV_8UC3)
         # cv.imshow('watershed', self.vis)
+
+        ol = overlay.astype(np.uint8)
+        mask_bool = ol[:, :, 2] == 255
+        nonb = mask_bool.nonzero()
+        all_points_y = nonb[0].tolist()
+        all_points_x = nonb[1].tolist()
+        self.boundary_points.clear()
+        self.boundary_points.append(all_points_x)
+        self.boundary_points.append(all_points_y)
         
     def start(self):
         self.watershed()
-        return self.vis
+        return self.vis, self.boundary_points
 
     def run(self):
         self.watershed()

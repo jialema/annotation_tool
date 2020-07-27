@@ -131,7 +131,7 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 		elif self.tabWidget.currentIndex() == 2: # 全自动处理
 			self.show_image_auto()
 			
-	# 显示图像
+	# 全手动标注的处理函数
 	def show_image_manu(self):
 		self.lb.refresh()
 		rgb_path = os.path.join(self.data_dir, self.test_data[self.image_id])
@@ -153,7 +153,8 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 		rgb_pix_map = display_image_on_label(rgb_image, self.lb)
 		self.lb.set_parameters(rgb_pix_map, self.radio_rect, self.radio_poly, self.cur_img_ann)
 		self.lb.setCursor(Qt.CrossCursor)  # 改变鼠标箭头形式
-	
+
+	# 半自动标注的处理函数
 	def show_image_semi(self):
 		# 获取待显示结果的路径
 		rgb_path = os.path.join(self.data_dir, self.test_data[self.image_id])
@@ -164,7 +165,8 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 		                                     self.label_mask_semi,
 		                                     label_curmarker=self.label_curmarker_semi,
 		                                     mask = self.boundary_points)   # 前景分割设置
-	
+
+	# 全自动标注的处理函数
 	def show_image_auto(self):
 		# 获取待显示结果的路径
 		data_dir = self.data_dir.split('/')[:-1]
@@ -186,8 +188,23 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 		# elif self.radio_auto_auto.isChecked():
 		_ = display_image_on_label(rgb_t_fusion_image, self.label_rgbtfusion_auto)
 		registered_pix_map = display_image_on_label(registered_image, self.mylabel_registered_auto)
-		mask = watershed.App(registered_image.copy()).start()
+		mask, self.boundary_points = watershed.App(registered_image.copy()).start()
 		_ = display_image_on_label(mask, self.label_mask_auto)
+
+		# 将掩码边界存储起来
+		# m = self.markers.copy()
+		# cv.watershed(self.img, m)
+		# overlay = self.colors[np.maximum(m, 0)]
+		# vis = cv.addWeighted(self.img, 0.5, overlay, 0.5, 0.0, dtype=cv.CV_8UC3)
+		# display_image_on_label(vis, self.label_mask_auto)
+		# ol = overlay.astype(np.uint8)
+		# mask_bool = ol[:, :, 2] == 255
+		# nonb = mask_bool.nonzero()
+		# all_points_y = nonb[0].tolist()
+		# all_points_x = nonb[1].tolist()
+		# self.mask.clear()
+		# self.mask.append(all_points_x)
+		# self.mask.append(all_points_y)
 		
 		self.mylabel_registered_auto.set_parameters(registered_image, registered_pix_map,
 		                                            self.label_mask_auto,
@@ -199,6 +216,11 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 			gray = cv.cvtColor(registered_image, cv.COLOR_BGR2GRAY)
 		
 	def on_save(self):
+		# 是否进行了标注
+		if self.boundary_points == []:
+			print("请先进行标注")
+			return
+
 		# 转换标注的格式
 		regions = []
 		regions_item = {}
@@ -216,11 +238,12 @@ class MainCode(QMainWindow, main_ui.Ui_MainWindow):
 		self.cur_img_ann["size"] = random.randint(0, 1000)
 		self.cur_img_ann["file_attributes"] = {}
 		self.cur_img_ann["regions"] = regions
-		
+
 		# 保存标注结果
 		save_path = "./results/"
 		j = json_lib.JSON()
 		j.JSONWrite(save_path + img_name[:-4] + ".json", self.cur_img_ann)
+		print(img_name + "的标注已保存到" + save_path + img_name[:-4] + ".json")
 		
 	def water_shed(self, img):
 		self.markers_vis = watershed.App(img).run()
